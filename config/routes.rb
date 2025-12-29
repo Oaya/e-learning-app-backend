@@ -1,9 +1,14 @@
 Rails.application.routes.draw do
-  resources :users
-  resources :memberships
-  resources :tenants
+  namespace :api, defaults: { format: :json } do
+    devise_for :users,
+      path: "auth",
+      defaults: { format: :json },
+      controllers: {
+        registrations: "api/auth/registrations",
+        sessions: "api/auth/sessions"
+      },
+      only: [ :registrations, :sessions, :confirmations ]
 
-  namespace :api do
     resources :plans, only: [ :index ]
   end
 end

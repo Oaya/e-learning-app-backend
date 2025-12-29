@@ -2,11 +2,9 @@ class Membership < ApplicationRecord
   belongs_to :user
   belongs_to :tenant
 
-  enum role: {
+  enum :role, {
     admin: "Admin",
     instructor: "Instructor",
     student: "Student"
-  }
-
-  validate :role, presence: true
+  }, validate: true
 end

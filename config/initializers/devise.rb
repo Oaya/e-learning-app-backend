@@ -24,7 +24,7 @@ Devise.setup do |config|
   # Configure the e-mail address which will be shown in Devise::Mailer,
   # note that it will be overwritten if you use your own mailer class
   # with default "from" parameter.
-  config.mailer_sender = "please-change-me-at-config-initializers-devise@example.com"
+  config.mailer_sender = "ayaaa.okzk+no_reply@gmail.com"
 
   # Configure the class responsible to send e-mails.
   # config.mailer = 'Devise::Mailer'
@@ -313,17 +313,17 @@ Devise.setup do |config|
 
     # Which requests should create/send a JWT
     jwt.dispatch_requests = [
-      [ "POST", %r{^/api/users/sign_in$} ],
-      [ "POST", %r{^/api/users/confirm_signin$} ],
-      [ "PATCH",  %r{^/api/users/password$} ],
-      [ "PATCH", %r{^/api/users/invitation$} ]
+      # [ "POST", %r{^/api/users/sign_in$} ],
+      # [ "POST", %r{^/api/users/confirm_signin$} ],
+      # [ "PATCH",  %r{^/api/users/password$} ],
+      # [ "PATCH", %r{^/api/users/invitation$} ]
       # optionally, also issue token on signup:
       # ['POST', %r{^/users$}],
     ]
 
     # Which requests should revoke JWTs (if using a revocation strategy)
     jwt.revocation_requests = [
-      [ "DELETE", %r{^/api/users/sign_out$} ]
+      # [ "DELETE", %r{^/api/users/sign_out$} ]
     ]
 
     # How long tokens are valid
