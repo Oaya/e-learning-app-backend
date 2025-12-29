@@ -5,7 +5,8 @@ Rails.application.routes.draw do
       defaults: { format: :json },
       controllers: {
         registrations: "api/auth/registrations",
-        sessions: "api/auth/sessions"
+        sessions: "api/auth/sessions",
+        confirmations: "api/auth/confirmations"
       },
       only: [ :registrations, :sessions, :confirmations ]
 

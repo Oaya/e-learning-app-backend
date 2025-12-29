@@ -3,7 +3,7 @@ module Api
     class RegistrationsController < Devise::RegistrationsController
       respond_to :json
 
-      # api/auth/registrations#create
+      # POST api/auth/registrations#create
       def create
         email = sign_up_params[:email].to_s.downcase
 
