@@ -3,7 +3,8 @@ module Api
     class InvitationsController < Devise::InvitationsController
       respond_to :json
 
-      before_action :authenticate_api_user!, :ensure_admin!, only: [ :create ]
+      before_action :authenticate_api_user!, :require_admin!, only: [ :create ]
+
 
 
       # POST /api/auth/invitation Send invitation email
@@ -51,12 +52,6 @@ module Api
 
 
       private
-
-      def ensure_admin!
-        role = current_api_user.membership&.role
-        return if role.to_s.downcase == "admin"
-        render_error("forbidden", :forbidden)
-      end
 
       def invite_params
         params.permit(:email, :first_name, :last_name, :role)

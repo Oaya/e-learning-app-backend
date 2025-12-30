@@ -16,4 +16,12 @@ class ApplicationController < ActionController::API
 
     render_error("Tenant required", :forbidden)
   end
+
+  def require_admin!
+    pp Current.user.membership&.role
+    role = Current.user.membership&.role
+    return if role == "admin"
+
+    render_error("No permission to access", :forbidden)
+  end
 end
