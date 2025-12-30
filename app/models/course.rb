@@ -4,5 +4,4 @@ class Course < ApplicationRecord
 
   validates :title, presence: true, on: :create
   validates :description, presence: true, on: :create
-  validates :order, presence: true, on: :create
 end

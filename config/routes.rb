@@ -12,6 +12,6 @@ Rails.application.routes.draw do
       only: [ :registrations, :sessions, :confirmations, :invitations ]
 
     resources :plans, only: [ :index ]
-    resources :lessons, :courses, :course_modules
+    resources :courses
   end
 end
