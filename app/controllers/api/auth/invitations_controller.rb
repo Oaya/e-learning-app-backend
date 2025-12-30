@@ -3,8 +3,7 @@ module Api
     class InvitationsController < Devise::InvitationsController
       respond_to :json
 
-      before_action :authenticate_api_user!
-      before_action :ensure_admin!
+      before_action :authenticate_api_user!, :ensure_admin!, only: [ :create ]
 
 
       # POST /api/auth/invitation Send invitation email
@@ -23,7 +22,7 @@ module Api
         )
 
         if invited_user.errors.any?
-          render_error(invited_user.errors.full_messages, :unprocessable_entity)
+          return render_error(invited_user.errors.full_messages, :unprocessable_entity)
         end
 
         # Create membership for invited user
@@ -32,7 +31,22 @@ module Api
           tenant_id: current_api_user.tenant_id,
           role: invite_params[:role]
         )
+
         render json: { message: "Invitation Email was sent to #{email}" }, status: :ok
+      end
+
+      # PATCH /api/auth/invitation -> Accept invitaion and create password
+      def update
+        self.resource = accept_resource
+
+        if resource.errors.empty?
+          payload = SignInWithJwt.new(self).issue_jwt(resource, message: "Created your new password")
+          render json: payload, status: :ok
+        else
+          render_error(resource.errors.full_messages, :unprocessable_entity)
+        end
+      rescue => e
+        render_error(e.message, :internal_server_error)
       end
 
 
@@ -46,6 +60,10 @@ module Api
 
       def invite_params
         params.permit(:email, :first_name, :last_name, :role)
+      end
+
+      def update_resource_params
+        params.permit(:invitation_token, :password, :password_confirmation)
       end
     end
   end
