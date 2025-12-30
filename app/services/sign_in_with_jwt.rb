@@ -5,14 +5,10 @@ class SignInWithJwt
   end
 
   # Issues a JWT for a user and returns a payload for the frontend
-  def issue_jwt(user, scope: nil, message: nil)
-    # Determine Devise scope (:user by default)
-    # resource_name exists on Devise controllers, fallback keeps it safe
-    scope ||= @controller.send(:resource_name) rescue :user
-
+  def issue_jwt(user,  message: nil)
     # Generate a JWT for this user WITHOUT using sessions
     # This returns an array: [token, payload] just get the token
-    jwt, = Warden::JWTAuth::UserEncoder.new.call(user, scope, nil)
+    jwt, _payload = Warden::JWTAuth::UserEncoder.new.call(user, :api_user, nil)
 
 
     # Safety check: if token generation failed, raise immediately
@@ -26,6 +22,15 @@ class SignInWithJwt
   end
 
   private
+
+  # Always use the Devise mapping scope your app uses (:api_user)
+  def detect_scope
+    if @controller.respond_to?(:resource_name, true)
+      @controller.send(:resource_name) # should be :api_user in your app
+    else
+      :api_user
+    end
+  end
 
   def serialize_user(user)
     {

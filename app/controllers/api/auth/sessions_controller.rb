@@ -21,7 +21,7 @@ module Api
           return render_error("Confirm your email before logging in", :unauthorized)
         end
 
-        payload = SignInWithJwt.new(self).issue_jwt(user, scope: :user, message: "Successfully logged in")
+        payload = SignInWithJwt.new(self).issue_jwt(user, message: "Successfully logged in")
         render json: payload, status: :ok
       end
     end

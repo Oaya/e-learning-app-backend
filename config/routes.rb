@@ -6,9 +6,10 @@ Rails.application.routes.draw do
       controllers: {
         registrations: "api/auth/registrations",
         sessions: "api/auth/sessions",
-        confirmations: "api/auth/confirmations"
+        confirmations: "api/auth/confirmations",
+        invitations: "api/auth/invitations"
       },
-      only: [ :registrations, :sessions, :confirmations ]
+      only: [ :registrations, :sessions, :confirmations, :invitations ]
 
     resources :plans, only: [ :index ]
   end
