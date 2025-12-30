@@ -1,5 +1,6 @@
 class User < ApplicationRecord
   belongs_to :tenant
+  has_one :membership, dependent: :destroy
 
   validates :first_name, :last_name, :email, :tenant_id, presence: true, on: :create
 

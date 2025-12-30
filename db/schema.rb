@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_29_223211) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_29_235824) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -50,6 +50,14 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_29_223211) do
     t.string "email", null: false
     t.string "encrypted_password", default: "", null: false
     t.string "first_name", null: false
+    t.datetime "invitation_accepted_at"
+    t.datetime "invitation_created_at"
+    t.integer "invitation_limit"
+    t.datetime "invitation_sent_at"
+    t.string "invitation_token"
+    t.integer "invitations_count", default: 0
+    t.bigint "invited_by_id"
+    t.string "invited_by_type"
     t.string "last_name", null: false
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
@@ -58,6 +66,9 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_29_223211) do
     t.datetime "updated_at", null: false
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true
+    t.index ["invited_by_id"], name: "index_users_on_invited_by_id"
+    t.index ["invited_by_type", "invited_by_id"], name: "index_users_on_invited_by"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["tenant_id"], name: "index_users_on_tenant_id"
   end
