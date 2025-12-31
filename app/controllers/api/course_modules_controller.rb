@@ -54,7 +54,7 @@ module Api
 
     private
     def course_module_params
-      params.permit(:title, :description, :order)
+      params.permit(:title, :description, :position)
     end
   end
 end

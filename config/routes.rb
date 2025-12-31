@@ -17,6 +17,10 @@ Rails.application.routes.draw do
       resources :course_modules, only: [ :index, :create ]
     end
 
-    resources :course_modules, only: [ :show, :update, :destroy ]
+    resources :course_modules do  [ :show, :update, :destroy ]
+      resources :lessons, only: [ :index, :create ]
+    end
+
+    resources :lessons, only: [ :show, :update, :destroy ]
   end
 end
