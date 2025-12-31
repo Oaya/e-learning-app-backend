@@ -1,9 +1,28 @@
 class CourseModule < ApplicationRecord
   belongs_to :tenant
   belongs_to :course
-  has_many :lessons
+  has_many :lessons, dependent: :destroy
 
   validates :title, presence: true, on: :create
   validates :description, presence: true, on: :create
-  validates :order, presence: true, on: :create
+  validates :position, presence: true, numericality: { only_integer: true }, uniqueness: { scope: :course_id }
+
+
+  before_validation :assign_position, on: :create
+  after_destroy :move_positions
+
+  private
+
+  # Auto assign the position when it's created
+  def assign_position
+    return if position.present?
+
+    self.position = course.course_modules.maximum(:position).to_i + 1
+  end
+
+  def move_positions
+    return if position.nil?
+
+    CourseModule.where(course_id: course_id).where("position > ?", position).update_all("position = position - 1")
+  end
 end

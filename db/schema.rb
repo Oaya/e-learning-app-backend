@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_30_045958) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_31_003002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -19,11 +19,11 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_30_045958) do
     t.uuid "course_id", null: false
     t.datetime "created_at", null: false
     t.text "description", null: false
-    t.integer "order", null: false
+    t.integer "position", null: false
     t.uuid "tenant_id", null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false
-    t.index ["course_id", "order"], name: "index_course_modules_on_course_id_and_order"
+    t.index ["course_id", "position"], name: "index_course_modules_on_course_id_and_position", unique: true
     t.index ["course_id"], name: "index_course_modules_on_course_id"
     t.index ["tenant_id"], name: "index_course_modules_on_tenant_id"
   end
@@ -44,11 +44,11 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_30_045958) do
     t.text "description", null: false
     t.integer "duration_in_minutes"
     t.string "lesson_type", null: false
-    t.integer "order", null: false
+    t.integer "position", null: false
     t.uuid "tenant_id", null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false
-    t.index ["course_module_id", "order"], name: "index_lessons_on_course_module_id_and_order"
+    t.index ["course_module_id", "position"], name: "index_lessons_on_course_module_id_and_position", unique: true
     t.index ["course_module_id"], name: "index_lessons_on_course_module_id"
     t.index ["tenant_id"], name: "index_lessons_on_tenant_id"
   end
