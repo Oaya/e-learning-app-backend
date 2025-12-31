@@ -11,7 +11,7 @@ class SignInWithJwt
     jwt, _payload = Warden::JWTAuth::UserEncoder.new.call(user, :api_user, nil)
 
 
-    pp user
+
     # Safety check: if token generation failed, raise immediately
     raise "Could not generate authentication token" if jwt.blank?
 

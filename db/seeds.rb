@@ -13,6 +13,7 @@
     price: 0,
     features: {
       max_courses: 1,
+      max_admin: 2,
       max_students: 10,
       quizzes: false
     }
@@ -22,6 +23,7 @@
     price: 10,
     features: {
       max_courses: 10,
+      max_admin: 5,
       max_students: 100,
       quizzes: true
     }
@@ -31,6 +33,7 @@
     price: 30,
     features: {
       max_courses: 50,
+      max_admin: 10,
       max_students: 500,
       quizzes: true
     }

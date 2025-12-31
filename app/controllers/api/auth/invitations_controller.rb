@@ -3,38 +3,26 @@ module Api
     class InvitationsController < Devise::InvitationsController
       respond_to :json
 
-      before_action :authenticate_api_user!, :require_admin!, only: [ :create ]
-
+      before_action :authenticate_api_user!, :require_admin!, :set_current_user_tenant_plan, only: [ :create ]
 
 
       # POST /api/auth/invitation Send invitation email
       def create
-        email = invite_params[:email].to_s.downcase
-
-
-        # Invite user into the SAME tenant as the current user
-        invited_user = User.invite!({
-          email: email,
-          first_name: invite_params[:first_name],
-          last_name: invite_params[:last_name],
-          tenant_id: current_api_user.tenant_id
-        },
-        current_api_user # invited_by
-        )
+        invited_user = InviteUser.new(
+          tenant: Current.tenant,
+          invited_by: current_api_user,
+          params: invite_params
+        ).call
 
         if invited_user.errors.any?
-          return render_error(invited_user.errors.full_messages, :unprocessable_entity)
+          render_error(invited_user.errors.full_messages, :unprocessable_entity)
+        else
+          render json: { message: "Invitation Email was sent to #{invited_user.email}" }, status: :ok
         end
-
-        # Create membership for invited user
-        Membership.find_or_create_by!(
-          user: invited_user,
-          tenant_id: current_api_user.tenant_id,
-          role: invite_params[:role]
-        )
-
-        render json: { message: "Invitation Email was sent to #{email}" }, status: :ok
+      rescue StandardError => e
+        render_error(e.message, :forbidden)
       end
+
 
       # PATCH /api/auth/invitation -> Accept invitaion and create password
       def update
