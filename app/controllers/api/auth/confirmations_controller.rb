@@ -6,10 +6,12 @@ module Api
       def show
         self.resource = resource_class.confirm_by_token(params[:confirmation_token])
 
+        frontend_url = Rails.application.credentials.frontend_url || "http://localhost:3000"
+
         if resource.errors.empty?
-          render json: { message: "Email confirmed successfully" }, status: :ok
+          redirect_to "#{frontend_url}/confirm-email?status=success"
         else
-          render_error(resource.errors.full_messages, :unprocessable_entity)
+          redirect_to "#{frontend_url}/confirm-email?status=error"
         end
       end
     end
