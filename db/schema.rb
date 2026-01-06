@@ -10,46 +10,36 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_31_003002) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_06_213932) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
 
-  create_table "course_modules", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "course_id", null: false
-    t.datetime "created_at", null: false
-    t.text "description", null: false
-    t.integer "position", null: false
-    t.uuid "tenant_id", null: false
-    t.string "title", null: false
-    t.datetime "updated_at", null: false
-    t.index ["course_id", "position"], name: "index_course_modules_on_course_id_and_position", unique: true
-    t.index ["course_id"], name: "index_course_modules_on_course_id"
-    t.index ["tenant_id"], name: "index_course_modules_on_tenant_id"
-  end
-
   create_table "courses", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "category"
     t.datetime "created_at", null: false
     t.string "description", null: false
+    t.string "level"
     t.boolean "published", default: false
     t.uuid "tenant_id", null: false
+    t.string "thumbnail"
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.index ["tenant_id"], name: "index_courses_on_tenant_id"
   end
 
   create_table "lessons", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "course_module_id", null: false
     t.datetime "created_at", null: false
     t.text "description", null: false
     t.integer "duration_in_minutes"
     t.string "lesson_type", null: false
     t.integer "position", null: false
+    t.uuid "section_id", null: false
     t.uuid "tenant_id", null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false
-    t.index ["course_module_id", "position"], name: "index_lessons_on_course_module_id_and_position", unique: true
-    t.index ["course_module_id"], name: "index_lessons_on_course_module_id"
+    t.index ["section_id", "position"], name: "index_lessons_on_section_id_and_position", unique: true
+    t.index ["section_id"], name: "index_lessons_on_section_id"
     t.index ["tenant_id"], name: "index_lessons_on_tenant_id"
   end
 
@@ -70,6 +60,19 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_31_003002) do
     t.integer "price", null: false
     t.string "stripe_price_id"
     t.datetime "updated_at", null: false
+  end
+
+  create_table "sections", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "course_id", null: false
+    t.datetime "created_at", null: false
+    t.text "description", null: false
+    t.integer "position", null: false
+    t.uuid "tenant_id", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["course_id", "position"], name: "index_sections_on_course_id_and_position", unique: true
+    t.index ["course_id"], name: "index_sections_on_course_id"
+    t.index ["tenant_id"], name: "index_sections_on_tenant_id"
   end
 
   create_table "tenants", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -111,13 +114,13 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_31_003002) do
     t.index ["tenant_id"], name: "index_users_on_tenant_id"
   end
 
-  add_foreign_key "course_modules", "courses"
-  add_foreign_key "course_modules", "tenants"
   add_foreign_key "courses", "tenants"
-  add_foreign_key "lessons", "course_modules"
+  add_foreign_key "lessons", "sections"
   add_foreign_key "lessons", "tenants"
   add_foreign_key "memberships", "tenants"
   add_foreign_key "memberships", "users"
+  add_foreign_key "sections", "courses"
+  add_foreign_key "sections", "tenants"
   add_foreign_key "tenants", "plans"
   add_foreign_key "users", "tenants"
 end

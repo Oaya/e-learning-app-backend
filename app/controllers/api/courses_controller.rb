@@ -48,10 +48,38 @@ module Api
       end
     end
 
+    # GET /api/courses/:id/details
+    def overview
+      course = Course.includes(sections: :lessons).find(params[:id])
+
+      render json: {
+        id: course.id,
+        title: course.title,
+        description: course.description,
+        level: Course.levels[course.level],
+        category: Course.categories[course.category],
+        thumbnail: course.thumbnail,
+        published: course.published,
+        created_at: course.created_at,
+        updated_at: course.updated_at,
+        sections: course.sections.order(:position).map { |m|
+          {
+            id: m.id,
+            title: m.title,
+            description: m.description,
+            position: m.position,
+            lessons: m.lessons.order(:position).map { |l|
+              { id: l.id, title: l.title, position: l.position }
+            }
+          }
+        }
+      }
+    end
+
 
     private
     def course_params
-      params.permit(:title, :description, :published)
+      params.permit(:title, :description, :category, :level, :thumbnail, :published)
     end
   end
 end

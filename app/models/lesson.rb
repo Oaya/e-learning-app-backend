@@ -1,11 +1,11 @@
 class Lesson < ApplicationRecord
   belongs_to :tenant
-  belongs_to :course_module
+  belongs_to :section
 
   validates :title, presence: true, on: :create
   validates :description, presence: true, on: :create
   validates :lesson_type, presence: true, on: :create
-  validates :position, presence: true, numericality: { only_integer: true }, uniqueness: { scope: :course_module_id }
+  validates :position, presence: true, numericality: { only_integer: true }, uniqueness: { scope: :section_id }
 
 
   before_validation :assign_position, on: :create
@@ -21,6 +21,6 @@ class Lesson < ApplicationRecord
   def move_positions
     return if position.nil?
 
-    Lesson.where(course_module_id: course_module_id).where("position > ?", position).update_all("position = position - 1")
+    Lesson.where(section_id: section_id).where("position > ?", position).update_all("position = position - 1")
   end
 end

@@ -5,8 +5,8 @@ module Api
 
     # GET /api/lessons/:lesson_id/lessons
     def index
-      course_module = Current.tenant.course_modules.find(params[:course_module_id])
-      lessons = course_module.lessons.order(:position)
+      section = Current.tenant.sections.find(params[:section_id])
+      lessons = section.lessons.order(:position)
 
       render json: lessons
     end
@@ -17,10 +17,10 @@ module Api
       render json: lesson
     end
 
-    # # POST /api/course_modules/:course_module_id/lessons
+    # # POST /api/sections/:section_id/lessons
     def create
-      course_module = Current.tenant.course_modules.find(params[:course_module_id])
-      lesson = course_module.lesson.new(lesson_params.merge(tenant: Current.tenant))
+      section = Current.tenant.sections.find(params[:section_id])
+      lesson = section.lesson.new(lesson_params.merge(tenant: Current.tenant))
 
       if lesson.save!
         render json: lesson, status: :created

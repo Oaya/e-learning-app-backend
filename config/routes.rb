@@ -14,10 +14,14 @@ Rails.application.routes.draw do
     resources :plans, only: [ :index ]
 
     resources :courses do
-      resources :course_modules, only: [ :index, :create ]
+      resources :sections, only: [ :index, :create ]
+
+      member do
+        get :overview
+      end
     end
 
-    resources :course_modules do  [ :show, :update, :destroy ]
+    resources :sections do  [ :show, :update, :destroy ]
       resources :lessons, only: [ :index, :create ]
     end
 
