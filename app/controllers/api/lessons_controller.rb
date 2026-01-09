@@ -1,5 +1,4 @@
-module Api
-  class  LessonsController < ApplicationController
+class  Api::LessonsController < ApplicationController
     before_action :authenticate_api_user!
     before_action :require_admin!, only: [ :create, :update, :destroy ]
 
@@ -20,7 +19,7 @@ module Api
     # # POST /api/sections/:section_id/lessons
     def create
       section = Current.tenant.sections.find(params[:section_id])
-      lesson = section.lesson.new(lesson_params.merge(tenant: Current.tenant))
+      lesson = section.lessons.new(lesson_params.merge(tenant: Current.tenant))
 
       if lesson.save!
         render json: lesson, status: :created
@@ -51,10 +50,22 @@ module Api
       end
     end
 
+    def reorder
+      section = Current.tenant.sections.find(params[:section_id])
+
+      ordered_ids = params.require(:lesson_ids)  # Expecting an array of lesson IDs in the desired order
+
+      ActiveRecord::Base.transaction do
+        section.lessons.update_all("position = position + 1000000")
+        ordered_ids.each_with_index do |lesson_id, index|
+          section.lessons.where(id: lesson_id).update_all(position: index + 1)
+        end
+      end
+    end
+
 
     private
     def lesson_params
-      params.permit(:title, :description, :duration_in_minutes, :lesson_type, :position)
+      params.permit(:title, :description, :duration_in_minutes, :lesson_type,)
     end
-  end
 end

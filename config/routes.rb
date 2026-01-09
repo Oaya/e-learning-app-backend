@@ -14,17 +14,20 @@ Rails.application.routes.draw do
     resources :plans, only: [ :index ]
 
     resources :courses do
-      resources :sections, only: [ :index, :create ]
+      resources :sections, only: [ :index, :create ] do
+        collection { put :reorder }
+      end
+      member { get :overview }
+    end
 
-      member do
-        get :overview
+    resources :sections, only: [ :show, :update, :destroy ] do
+      resources :lessons, only: [ :index, :create ] do
+        collection { put :reorder }
       end
     end
 
-    resources :sections do  [ :show, :update, :destroy ]
-      resources :lessons, only: [ :index, :create ]
-    end
-
     resources :lessons, only: [ :show, :update, :destroy ]
+
+    get "auth/me", to: "auth/users#me"
   end
 end

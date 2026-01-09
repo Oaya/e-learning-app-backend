@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_06_213932) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_07_233458) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -29,8 +29,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_06_213932) do
   end
 
   create_table "lessons", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "content_url"
     t.datetime "created_at", null: false
-    t.text "description", null: false
+    t.text "description"
     t.integer "duration_in_minutes"
     t.string "lesson_type", null: false
     t.integer "position", null: false

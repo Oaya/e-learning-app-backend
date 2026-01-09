@@ -1,5 +1,4 @@
-module Api
-  class  SectionsController < ApplicationController
+class  Api::SectionsController < ApplicationController
     before_action :authenticate_api_user!
     before_action :require_admin!, only: [ :create, :update, :destroy ]
 
@@ -51,10 +50,22 @@ module Api
       end
     end
 
+    def reorder
+      course = Current.tenant.courses.find(params[:course_id])
+
+      ordered_ids = params.require(:section_ids)  # Expecting an array of lesson IDs in the desired order
+
+      ActiveRecord::Base.transaction do
+        course.sections.update_all("position = position + 1000000")
+        ordered_ids.each_with_index do |section_id, index|
+          course.sections.where(id: section_id).update_all(position: index + 1)
+        end
+      end
+    end
+
 
     private
     def section_params
       params.permit(:title, :description, :position)
     end
-  end
 end

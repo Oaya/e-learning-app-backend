@@ -69,7 +69,15 @@ module Api
             description: m.description,
             position: m.position,
             lessons: m.lessons.order(:position).map { |l|
-              { id: l.id, title: l.title, position: l.position }
+              {
+                id: l.id,
+                title: l.title,
+                description: l.description,
+                position: l.position,
+                lesson_type: Lesson.lesson_types[l.lesson_type],
+                duration_in_minutes: l.duration_in_minutes,
+                content_url: l.content_url
+              }
             }
           }
         }

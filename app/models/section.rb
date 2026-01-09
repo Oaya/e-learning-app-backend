@@ -1,4 +1,4 @@
-class CourseModule < ApplicationRecord
+class Section < ApplicationRecord
   belongs_to :tenant
   belongs_to :course
   has_many :lessons, dependent: :destroy
@@ -17,12 +17,12 @@ class CourseModule < ApplicationRecord
   def assign_position
     return if position.present?
 
-    self.position = course.course_modules.maximum(:position).to_i + 1
+    self.position = course.sections.maximum(:position).to_i + 1
   end
 
   def move_positions
     return if position.nil?
 
-    CourseModule.where(course_id: course_id).where("position > ?", position).update_all("position = position - 1")
+    Section.where(course_id: course_id).where("position > ?", position).update_all("position = position - 1")
   end
 end
