@@ -1,12 +1,17 @@
 module Api
   class  CoursesController < ApplicationController
+    include S3
     before_action :authenticate_api_user!
     before_action :require_admin!, only: [ :create, :update, :destroy ]
 
     # GET /api/courses
     def index
       courses = Current.tenant.courses.order(created_at: :desc)
-      render json: courses
+      render json: courses.map { |course|
+        course.as_json.merge(
+          thumbnail_url: public_thumbnail_url(course.thumbnail_key)
+        )
+      }
     end
 
     # GET /api/courses/:id
@@ -19,6 +24,8 @@ module Api
     def create
       course = CreateCourse.new(tenant: Current.tenant, params: course_params).call
 
+
+      pp course
       if course.persisted?
         render json: course, status: :created
       else
@@ -58,7 +65,8 @@ module Api
         description: course.description,
         level: Course.levels[course.level],
         category: Course.categories[course.category],
-        thumbnail: course.thumbnail,
+        thumbnail_key: course.thumbnail_key,
+        thumbnail_url: public_thumbnail_url(course.thumbnail_key),
         published: course.published,
         created_at: course.created_at,
         updated_at: course.updated_at,
@@ -87,7 +95,13 @@ module Api
 
     private
     def course_params
-      params.permit(:title, :description, :category, :level, :thumbnail, :published)
+      params.permit(:title, :description, :category, :level, :thumbnail_key, :published)
+    end
+
+    def public_thumbnail_url(thumbnail_key)
+      return nil unless thumbnail_key.present?
+
+      "https://#{s3_bucket}.s3.#{s3_region}.amazonaws.com/#{thumbnail_key}"
     end
   end
 end

@@ -29,5 +29,9 @@ Rails.application.routes.draw do
     resources :lessons, only: [ :show, :update, :destroy ]
 
     get "auth/me", to: "auth/users#me"
+
+    # aws s3 direct upload presign
+    post "aws/presigned_url", to: "aws#presigned_url"
+    delete "/aws/delete_object", to: "api/aws#delete_object"
   end
 end

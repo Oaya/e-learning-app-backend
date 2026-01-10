@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_07_233458) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_09_222537) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -22,7 +22,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_07_233458) do
     t.string "level"
     t.boolean "published", default: false
     t.uuid "tenant_id", null: false
-    t.string "thumbnail"
+    t.string "thumbnail_key"
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.index ["tenant_id"], name: "index_courses_on_tenant_id"
