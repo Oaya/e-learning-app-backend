@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_09_222537) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_15_190006) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -20,25 +20,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_09_222537) do
     t.datetime "created_at", null: false
     t.string "description", null: false
     t.string "level"
+    t.decimal "price", precision: 10, scale: 2
     t.boolean "published", default: false
     t.uuid "tenant_id", null: false
     t.string "thumbnail_key"
+    t.string "thumbnail_name"
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.index ["tenant_id"], name: "index_courses_on_tenant_id"
   end
 
   create_table "lessons", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "content_url"
+    t.string "article"
     t.datetime "created_at", null: false
     t.text "description"
-    t.integer "duration_in_minutes"
+    t.integer "duration_in_seconds"
     t.string "lesson_type", null: false
     t.integer "position", null: false
     t.uuid "section_id", null: false
     t.uuid "tenant_id", null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false
+    t.string "video_key"
+    t.string "video_name"
     t.index ["section_id", "position"], name: "index_lessons_on_section_id_and_position", unique: true
     t.index ["section_id"], name: "index_lessons_on_section_id"
     t.index ["tenant_id"], name: "index_lessons_on_tenant_id"

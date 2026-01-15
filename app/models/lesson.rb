@@ -9,7 +9,7 @@ class Lesson < ApplicationRecord
 
   enum :lesson_type, {
     video: "Video",
-    article: "Article"
+    reading: "Reading"
   }
 
 

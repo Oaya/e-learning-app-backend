@@ -3,7 +3,7 @@ class ApplicationController < ActionController::API
 
   private
 
-  def render_error(message, status = :unprocessable_entity)
+  def render_error(message, status:)
     render json: { error: message }, status: status
   end
 
@@ -28,5 +28,11 @@ class ApplicationController < ActionController::API
     return if role == "admin"
 
     render_error("No permission to access", :forbidden)
+  end
+
+  def s3_file_url(file_key)
+    return nil unless file_key.present?
+
+    "https://#{s3_bucket}.s3.#{s3_region}.amazonaws.com/#{file_key}"
   end
 end

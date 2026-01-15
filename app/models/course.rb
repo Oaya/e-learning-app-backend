@@ -4,6 +4,7 @@ class Course < ApplicationRecord
 
   validates :title, presence: true, on: :create
   validates :description, presence: true, on: :create
+  validates :price, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
 
   enum :category, {
    development: "Development",

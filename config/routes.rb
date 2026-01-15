@@ -17,7 +17,11 @@ Rails.application.routes.draw do
       resources :sections, only: [ :index, :create ] do
         collection { put :reorder }
       end
-      member { get :overview }
+      member do
+        get :overview
+        patch :price
+        patch :publish
+      end
     end
 
     resources :sections, only: [ :show, :update, :destroy ] do
@@ -32,6 +36,6 @@ Rails.application.routes.draw do
 
     # aws s3 direct upload presign
     post "aws/presigned_url", to: "aws#presigned_url"
-    delete "/aws/delete_object", to: "api/aws#delete_object"
+    delete "/aws/delete_object", to: "aws#delete_object"
   end
 end

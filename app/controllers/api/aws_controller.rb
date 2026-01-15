@@ -6,15 +6,19 @@ class Api::AwsController < ApplicationController
     "image/jpeg",
     "image/png",
     "image/gif",
-    "image/webp"
+    "image/webp",
+    "video/mp4",
+    "video/webm",
+    "video/ogg"
   ].freeze
 
-  MAX_BYTES = 5.megabytes
+  MAX_BYTES = 100.megabytes
 
   def presigned_url
     filename  = params.require(:filename)
     content_type = params.require(:content_type)
     byte_size = params.require(:byte_size).to_i
+
 
     unless ALLOWED_CONTENT_TYPES.include?(content_type)
       return render_error("unsupported_type", status: :unprocessable_entity)
@@ -24,7 +28,7 @@ class Api::AwsController < ApplicationController
       return render_error("file_too_large", status: :unprocessable_entity)
     end
 
-    key = build_course_thumbnail_key(filename)
+    key = build_course_thumbnail_key(filename, params[:for])
 
     render json: {
       key: key,
@@ -48,7 +52,7 @@ class Api::AwsController < ApplicationController
 
   private
 
-  def build_course_thumbnail_key(filename)
+  def build_course_thumbnail_key(filename, type)
     safe = filename.gsub(/[^\w.\-]/, "_")
 
     tenant_prefix =
@@ -56,6 +60,6 @@ class Api::AwsController < ApplicationController
         "tenants/#{Current.tenant.id}/" :
         ""
 
-    "#{tenant_prefix}course-thumbnails/#{SecureRandom.uuid}-#{safe}"
+    "#{tenant_prefix}#{type}/#{SecureRandom.uuid}-#{safe}"
   end
 end
