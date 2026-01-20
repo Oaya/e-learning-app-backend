@@ -24,7 +24,7 @@ class  Api::SectionsController < ApplicationController
       if section.save!
         render json: section, status: :created
       else
-        render_error(section.errors.full_messages, :unprocessable_entity)
+        render_error(section.errors.full_messages, status: :unprocessable_entity)
       end
     end
 
@@ -35,7 +35,7 @@ class  Api::SectionsController < ApplicationController
       if section.update(section_params)
         render json: section, status: :created
       else
-        render_error(section.errors.full_messages, :unprocessable_entity)
+        render_error(section.errors.full_messages, status: :unprocessable_entity)
       end
     end
 
@@ -46,7 +46,7 @@ class  Api::SectionsController < ApplicationController
       if section.destroy!
         render status: :ok
       else
-        render_error(course.errors.full_messages, :unprocessable_entity)
+        render_error(section.errors.full_messages, status: :unprocessable_entity)
       end
     end
 

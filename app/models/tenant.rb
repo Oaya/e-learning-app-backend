@@ -4,6 +4,7 @@ class Tenant < ApplicationRecord
   has_many :sections
   has_many :lessons
   has_many :memberships
+  has_many :users, through: :memberships
 
   validates :name, presence: true, uniqueness: true
 end

@@ -3,6 +3,15 @@ class User < ApplicationRecord
   has_one :membership, dependent: :destroy
 
   validates :first_name, :last_name, :email, :tenant_id, presence: true, on: :create
+  validates :email, uniqueness: { case_sensitive: false }
+  validates :status, presence: true
+
+  enum :status, {
+    active: "Active",
+    inactive: "Inactive",
+    closed: "Closed",
+    invited: "Invited"
+  }, validate: true
 
 
   # This add devise api with users

@@ -33,7 +33,7 @@ class  Api::CoursesController < ApplicationController
     if course.persisted?
       render json: course, status: :created
     else
-      render_error(course.errors.full_messages, :unprocessable_entity)
+      render_error(course.errors.full_messages,  status: :unprocessable_entity)
     end
   end
 
@@ -44,7 +44,7 @@ class  Api::CoursesController < ApplicationController
     if course.update(course_params)
       render json: course, status: :created
     else
-      render_error(course.errors.full_messages, :unprocessable_entity)
+      render_error(course.errors.full_messages,  status: :unprocessable_entity)
     end
   end
 
@@ -55,7 +55,7 @@ class  Api::CoursesController < ApplicationController
     if course.destroy!
       render status: :ok
     else
-      render_error(course.errors.full_messages, :unprocessable_entity)
+      render_error(course.errors.full_messages,  status: :unprocessable_entity)
     end
   end
 
@@ -108,7 +108,7 @@ class  Api::CoursesController < ApplicationController
     if course.update(price: params.require(:price))
       render json: course, status: :created
     else
-      render_error(course.errors.full_messages, :unprocessable_entity)
+      render_error(course.errors.full_messages,  status: :unprocessable_entity)
     end
   end
 
@@ -119,7 +119,7 @@ class  Api::CoursesController < ApplicationController
     if course.update(published: true)
       render json: course, status: :created
     else
-      render_error(course.errors.full_messages, :unprocessable_entity)
+      render_error(course.errors.full_messages, status: :unprocessable_entity)
     end
   end
 

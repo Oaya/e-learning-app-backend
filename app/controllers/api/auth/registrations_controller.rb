@@ -13,7 +13,7 @@ module Api
         if exists_user
           # if user is already confrimed then send error message that it can't use the email
           if exists_user.confirmed?
-            render_error("Cannot register email #{email}", :unprocessable_entity)
+            render_error("Cannot register email #{email}", status: :unprocessable_entity)
             return
           else
             exists_user.send_confirmation_instructions
@@ -28,7 +28,7 @@ module Api
         pp plan
 
         unless plan
-          render_error("Invalid Plan", :unprocessable_entity)
+          render_error("Invalid Plan", status: :unprocessable_entity)
           return
         end
 

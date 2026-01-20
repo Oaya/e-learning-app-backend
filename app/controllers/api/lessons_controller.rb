@@ -30,7 +30,7 @@ class  Api::LessonsController < ApplicationController
     if lesson.save!
       render json: lesson, status: :created
     else
-      render_error(course.errors.full_messages, :unprocessable_entity)
+      render_error(course.errors.full_messages, status: :unprocessable_entity)
     end
   end
 
@@ -41,7 +41,7 @@ class  Api::LessonsController < ApplicationController
     if lesson.update(lesson_params)
       render json: lesson, status: :created
     else
-      render_error(course.errors.full_messages, :unprocessable_entity)
+      render_error(course.errors.full_messages, status: :unprocessable_entity)
     end
   end
 
@@ -52,7 +52,7 @@ class  Api::LessonsController < ApplicationController
     if lesson.destroy!
       render status: :ok
     else
-      render_error(course.errors.full_messages, :unprocessable_entity)
+      render_error(course.errors.full_messages, status: :unprocessable_entity)
     end
   end
 

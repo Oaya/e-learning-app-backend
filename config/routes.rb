@@ -11,6 +11,8 @@ Rails.application.routes.draw do
       },
       only: [ :registrations, :sessions, :confirmations, :invitations ]
 
+    resources :users, only: [ :index, :show, :update, :destroy ]
+
     resources :plans, only: [ :index ]
 
     resources :courses do

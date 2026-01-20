@@ -16,7 +16,8 @@ class InviteUser
           email: @email,
           first_name: @params[:first_name],
           last_name: @params[:last_name],
-          tenant_id: @tenant.id
+          tenant_id: @tenant.id,
+          status: "invited"
         },
         @invited_by
       )

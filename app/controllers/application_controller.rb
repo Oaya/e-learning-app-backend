@@ -17,17 +17,29 @@ class ApplicationController < ActionController::API
 
     return if Current.tenant.present?
 
-    render_error("Tenant required", :forbidden)
+    render_error("Tenant required", status: :forbidden)
   end
 
   def require_admin!
     user = current_api_user
-    return render_error("Unauthorized", :unauthorized) unless user
+    return render_error("Unauthorized", status: :unauthorized) unless user
 
     role = user.membership&.role.to_s.downcase
     return if role == "admin"
 
-    render_error("No permission to access", :forbidden)
+    render_error("No permission to access", status: :forbidden)
+  end
+
+
+  def require_admin_or_instructor!
+    user = current_api_user
+    return render_error("Unauthorized", status: :unauthorized) unless user
+
+    role = user.membership&.role.to_s.downcase
+    pp role
+    return if role == "admin" || role == "instructor"
+
+    render_error("No permission to access", status: :forbidden)
   end
 
   def s3_file_url(file_key)
