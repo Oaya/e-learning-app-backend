@@ -1,8 +1,9 @@
 class User < ApplicationRecord
   belongs_to :tenant
   has_one :membership, dependent: :destroy
+  has_one_attached :avatar
 
-  validates :first_name, :last_name, :email, :tenant_id, presence: true, on: :create
+  validates :first_name, :last_name, :email, :tenant_id, presence: true
   validates :email, uniqueness: { case_sensitive: false }
   validates :status, presence: true
 

@@ -1,7 +1,7 @@
 class  Api::LessonsController < ApplicationController
-  include S3
   before_action :authenticate_api_user!
   before_action :require_admin!, only: [ :create, :update, :destroy ]
+  include Rails.application.routes.url_helpers
 
   # GET /api/lessons/:lesson_id/lessons
   def index
@@ -9,7 +9,7 @@ class  Api::LessonsController < ApplicationController
     lessons = section.lessons.order(:position)
     render json: lessons.map { |lesson|
       lesson.as_json.merge(
-        video_url: s3_file_url(lesson.video_key)
+        video: lesson.video.attached? ? rails_blob_url(lesson.video, host: request.base_url) : nil
       )
     }
   end
@@ -17,18 +17,20 @@ class  Api::LessonsController < ApplicationController
   # GET /api/lessons/:id
   def show
     lesson = Current.tenant.lessons.find(params[:id])
-    render json: lesson.as_json.merge(
-      video_url: s3_file_url(lesson.video_key)
-    )
+      render json: lesson_fetch_results(lesson)
   end
 
   # # POST /api/sections/:section_id/lessons
   def create
     section = Current.tenant.sections.find(params[:section_id])
-    lesson = section.lessons.new(lesson_params.merge(tenant: Current.tenant))
+    lesson = section.lessons.new(lesson_params.merge(tenant: Current.tenant).except(:video_signed_id))
+
+    if params[:lesson_type] == "video" && params[:video_signed_id].present?
+      lesson.video.attach(params[:video_signed_id])
+    end
 
     if lesson.save!
-      render json: lesson, status: :created
+      render json: lesson_fetch_results(lesson) , status: :created
     else
       render_error(course.errors.full_messages, status: :unprocessable_entity)
     end
@@ -38,10 +40,21 @@ class  Api::LessonsController < ApplicationController
   def update
     lesson = Current.tenant.lessons.find(params[:id])
 
-    if lesson.update(lesson_params)
-      render json: lesson, status: :created
+    ActiveRecord::Base.transaction do
+      # attach video if provided
+      if params[:lesson_type] == "video" && params[:video_signed_id].present?
+        lesson.video.attach(params[:video_signed_id])
+      else 
+        lesson.video.purge if lesson.video.attached?
+      end
+
+      lesson.update!(lesson_params.except(:video_signed_id))
+    end  
+
+    if lesson.errors.empty?
+      render json: lesson_fetch_results(lesson), status: :created
     else
-      render_error(course.errors.full_messages, status: :unprocessable_entity)
+      render_error(lesson.errors.full_messages, status: :unprocessable_entity)
     end
   end
 
@@ -52,7 +65,7 @@ class  Api::LessonsController < ApplicationController
     if lesson.destroy!
       render status: :ok
     else
-      render_error(course.errors.full_messages, status: :unprocessable_entity)
+      render_error(lesson.errors.full_messages, status: :unprocessable_entity)
     end
   end
 
@@ -72,6 +85,13 @@ class  Api::LessonsController < ApplicationController
 
   private
   def lesson_params
-    params.permit(:title, :description, :duration_in_seconds, :lesson_type, :video_key, :video_name, :article)
+    params.permit(:title, :description, :duration_in_seconds, :lesson_type, :video_signed_id, :article)
+  end
+
+
+  def lesson_fetch_results(lesson)
+    lesson.as_json.merge(
+      video: lesson.video.attached? ? rails_blob_url(lesson.video, host: request.base_url) : nil
+    )
   end
 end

@@ -1,37 +1,48 @@
-
 class  Api::CoursesController < ApplicationController
-  include S3
   before_action :authenticate_api_user!
   before_action :require_admin!, only: [ :create, :update, :destroy ]
+  include Rails.application.routes.url_helpers
 
   # GET /api/courses
   def index
     courses = Current.tenant.courses.order(created_at: :desc)
     render json: courses.map { |course|
       course.as_json.merge(
-        thumbnail_url: s3_file_url(course.thumbnail_key)
+        thumbnail: course.thumbnail.attached? ? rails_blob_url(course.thumbnail, host: request.base_url) : nil
       )
     }
   end
 
   # GET /api/courses/:id
   def show
-    course = Current.tenant.courses.find(params[:id])
+    course = Current.tenant.courses.includes(:instructors).find(params[:id])
     render json: course.as_json.merge(
-      thumbnail_url: s3_file_url(course.thumbnail_key),
+      thumbnail: course.thumbnail.attached? ? rails_blob_url(course.thumbnail, host: request.base_url) : nil,
       level: Course.levels[course.level],
       category: Course.categories[course.category],
+      instructors: course.instructors.map { |instructor|
+        {
+          id: instructor.id,
+          email: instructor.email,
+          first_name: instructor.first_name,
+          last_name: instructor.last_name,
+          avatar: instructor.avatar.attached? ? rails_blob_url(instructor.avatar, host: request.base_url) : nil
+        }
+      }
     )
   end
 
   # POST /api/courses
   def create
-    course = CreateCourse.new(tenant: Current.tenant, params: course_params).call
+    course, instructors = CreateCourse.new(tenant: Current.tenant, params: course_params).call
 
+    # attach thumbnail if provided
+    if course_params[:thumbnail_signed_id].present?
+      course.thumbnail.attach(course_params[:thumbnail_signed_id])
+    end
 
-    pp course
     if course.persisted?
-      render json: course, status: :created
+      render json: course_fetch_results(course, instructors), status: :created
     else
       render_error(course.errors.full_messages,  status: :unprocessable_entity)
     end
@@ -41,8 +52,19 @@ class  Api::CoursesController < ApplicationController
   def update
     course = Current.tenant.courses.find(params[:id])
 
-    if course.update(course_params)
-      render json: course, status: :created
+    ActiveRecord::Base.transaction do
+      # attach thumbnail if provided
+      if course_params[:thumbnail_signed_id].present?
+        course.thumbnail.attach(course_params[:thumbnail_signed_id])
+      else
+        course.thumbnail.purge if course.thumbnail.attached?
+      end
+
+      course.update!(course_params.except(:thumbnail_signed_id))  
+    end
+
+    if course.error.empty?
+      render json: course_fetch_results(course, course.instructors), status: :created
     else
       render_error(course.errors.full_messages,  status: :unprocessable_entity)
     end
@@ -61,7 +83,7 @@ class  Api::CoursesController < ApplicationController
 
   # GET /api/courses/:id/details
   def overview
-    course = Course.includes(sections: :lessons).find(params[:id])
+    course = Current.tenant.courses.includes(sections: :lessons, instructors: []).find(params[:id])
 
     render json: {
       id: course.id,
@@ -69,13 +91,20 @@ class  Api::CoursesController < ApplicationController
       description: course.description,
       level: Course.levels[course.level],
       category: Course.categories[course.category],
-      thumbnail_name: course.thumbnail_name,
-      thumbnail_key: course.thumbnail_key,
-      thumbnail_url: s3_file_url(course.thumbnail_key),
+      thumbnail: course.thumbnail.attached? ? rails_blob_url(course.thumbnail, host: request.base_url) : nil,
       published: course.published,
       price: course.price,
       created_at: course.created_at,
       updated_at: course.updated_at,
+      instructors: course.instructors.map { |instructor|
+        {
+          id: instructor.id,
+          email: instructor.email,
+          first_name: instructor.first_name,
+          last_name: instructor.last_name,
+          avatar: instructor.avatar.attached? ? rails_blob_url(instructor.avatar, host: request.base_url) : nil
+        }
+      },
       sections: course.sections.order(:position).map { |m|
         {
           id: m.id,
@@ -90,9 +119,7 @@ class  Api::CoursesController < ApplicationController
               position: l.position,
               lesson_type: Lesson.lesson_types[l.lesson_type],
               duration_in_seconds: l.duration_in_seconds,
-              video_name: l.video_name,
-              video_key: l.video_key,
-              video_url: s3_file_url(l.video_key),
+              video: l.video.attached? ? rails_blob_url(l.video, host: request.base_url) : nil,
               article: l.article
             }
           }
@@ -106,7 +133,7 @@ class  Api::CoursesController < ApplicationController
     course = Current.tenant.courses.find(params[:id])
 
     if course.update(price: params.require(:price))
-      render json: course, status: :created
+      render json: course_fetch_results(course, course.instructors), status: :created
     else
       render_error(course.errors.full_messages,  status: :unprocessable_entity)
     end
@@ -126,6 +153,21 @@ class  Api::CoursesController < ApplicationController
 
   private
   def course_params
-    params.permit(:title, :description, :category, :level, :thumbnail_key, :thumbnail_name, :published)
+    params.permit(:title, :description, :category, :level, :thumbnail_signed_id, :published, instructor_ids: [])
+  end
+
+  def course_fetch_results(course, instructors)
+    course.as_json.merge(
+      thumbnail: course.thumbnail.attached? ? rails_blob_url(course.thumbnail, host: request.base_url) : nil,
+      instructors: course.instructors.map { |instructor|
+        {
+          id: instructor.id,
+          email: instructor.email,
+          first_name: instructor.first_name,
+          last_name: instructor.last_name,
+          avatar: instructor.avatar.attached? ? rails_blob_url(instructor.avatar, host: request.base_url) : nil
+        }
+      }
+    ) 
   end
 end

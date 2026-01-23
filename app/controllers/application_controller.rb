@@ -4,7 +4,8 @@ class ApplicationController < ActionController::API
   private
 
   def render_error(message, status:)
-    render json: { error: message }, status: status
+    msg = message.is_a?(Array) ? message.join(", ") : message.to_s
+    render json: { error: msg }, status: status
   end
 
 
@@ -40,11 +41,5 @@ class ApplicationController < ActionController::API
     return if role == "admin" || role == "instructor"
 
     render_error("No permission to access", status: :forbidden)
-  end
-
-  def s3_file_url(file_key)
-    return nil unless file_key.present?
-
-    "https://#{s3_bucket}.s3.#{s3_region}.amazonaws.com/#{file_key}"
   end
 end

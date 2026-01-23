@@ -1,4 +1,5 @@
 class SignInWithJwt
+  include Rails.application.routes.url_helpers
   # Store controller instance so we can access helpers like `resource_name`
   def initialize(controller)
     @controller = controller
@@ -33,16 +34,18 @@ class SignInWithJwt
     end
   end
 
+
   def serialize_user(user)
     {
       id: user.id,
       email: user.email,
       first_name: user.first_name,
       last_name: user.last_name,
-      role: user.membership&.role,
+      role: Membership.roles[user.membership&.role],
       tenant_id: user.tenant&.id,
       tenant_name: user.tenant&.name,
-      plan: user.tenant&.plan&.name
+      plan: user.tenant&.plan&.name,
+      avatar: user.avatar.attached? ? rails_blob_url(user.avatar, host: @controller.request.base_url) : nil
     }
   end
 end

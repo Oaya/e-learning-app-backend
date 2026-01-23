@@ -25,7 +25,6 @@ module Api
         # If the user doesn't exists, signup with Tenant and plan
         # find plan first
         plan = Plan.find_by(name: tenant_params[:plan])
-        pp plan
 
         unless plan
           render_error("Invalid Plan", status: :unprocessable_entity)
@@ -38,7 +37,7 @@ module Api
           tenant = Tenant.create!(name: tenant_params[:tenant], plan: plan)
           pp tenant
 
-          user = User.create!(sign_up_params.merge(email: email, tenant: tenant))
+          user = User.create!(sign_up_params.merge(email: email, tenant: tenant, status: "invited"))
 
           pp user
 
@@ -49,7 +48,7 @@ module Api
 
 
       rescue ActiveRecord::RecordInvalid => e
-          render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
+          render_error(e.record.errors.full_messages, status: :unprocessable_entity)
       end
 
 

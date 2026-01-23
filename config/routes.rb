@@ -11,7 +11,11 @@ Rails.application.routes.draw do
       },
       only: [ :registrations, :sessions, :confirmations, :invitations ]
 
-    resources :users, only: [ :index, :show, :update, :destroy ]
+    resources :users, only: [ :index, :show, :update, :destroy ] do
+      collection do
+        get :instructors
+      end
+    end
 
     resources :plans, only: [ :index ]
 
@@ -35,6 +39,7 @@ Rails.application.routes.draw do
     resources :lessons, only: [ :show, :update, :destroy ]
 
     get "auth/me", to: "auth/users#me"
+    patch "auth/me", to: "auth/users#update_me"
 
     # aws s3 direct upload presign
     post "aws/presigned_url", to: "aws#presigned_url"
