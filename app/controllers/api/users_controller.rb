@@ -29,7 +29,7 @@ class Api::UsersController < ApplicationController
         email: user.email,
         first_name: user.first_name,
         last_name: user.last_name,
-        avatar: user.avatar
+        avatar: user.avatar.attached? ? rails_blob_url(user.avatar, host: request.base_url) : nil
       }
     }
 

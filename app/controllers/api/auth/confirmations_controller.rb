@@ -9,6 +9,7 @@ module Api
         frontend_url = Rails.application.credentials.frontend_url || "http://localhost:3000"
 
         if resource.errors.empty?
+          resource.update!(status: "Active")
           redirect_to "#{frontend_url}/confirm-email?status=success"
         else
           redirect_to "#{frontend_url}/confirm-email?status=error"

@@ -41,8 +41,6 @@ Rails.application.routes.draw do
     get "auth/me", to: "auth/users#me"
     patch "auth/me", to: "auth/users#update_me"
 
-    # aws s3 direct upload presign
-    post "aws/presigned_url", to: "aws#presigned_url"
-    delete "/aws/delete_object", to: "aws#delete_object"
+    post "rails/active_storage/direct_uploads", to: "active_storage/direct_uploads#create"
   end
 end
