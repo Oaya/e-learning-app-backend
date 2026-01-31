@@ -40,6 +40,7 @@ Rails.application.routes.draw do
 
     get "auth/me", to: "auth/users#me"
     patch "auth/me", to: "auth/users#update_me"
+    patch "auth/me/password", to: "auth/users#update_password"
 
     post "rails/active_storage/direct_uploads", to: "active_storage/direct_uploads#create"
   end

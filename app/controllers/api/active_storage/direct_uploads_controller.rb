@@ -5,15 +5,8 @@ module Api
       before_action :authenticate_api_user!
 
       def create
-        kind = params[:kind].to_s
 
-        type_prefix =
-          case kind
-          when "avatar" then "avatars"
-          when "thumbnail" then "thumbnails"
-          when "video" then "videos"
-          else "uploads"
-          end
+        type_prefix = params[:kind].to_s
 
         base_key = ::ActiveStorage::Blob.generate_unique_secure_token
         custom_key = "tenants/#{Current.tenant.id}/#{type_prefix}/#{base_key}"

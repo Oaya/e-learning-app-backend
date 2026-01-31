@@ -20,19 +20,25 @@ class  Api::LessonsController < ApplicationController
       render json: lesson_fetch_results(lesson)
   end
 
-  # # POST /api/sections/:section_id/lessons
+  # POST /api/sections/:section_id/lessons
   def create
     section = Current.tenant.sections.find(params[:section_id])
-    lesson = section.lessons.new(lesson_params.merge(tenant: Current.tenant).except(:video_signed_id))
 
-    if params[:lesson_type] == "video" && params[:video_signed_id].present?
-      lesson.video.attach(params[:video_signed_id])
+    lp = lesson_params.to_h # normalize keys
+    signed_id = lp["video_signed_id"].to_s
+
+    lesson = section.lessons.new(lp.except("video_signed_id").merge(tenant: Current.tenant))
+
+    # Only attach if this is a video lesson AND the client provided a signed id
+    if lesson.video? && signed_id.present?
+      lesson.video.attach(signed_id)
     end
 
-    if lesson.save!
-      render json: lesson_fetch_results(lesson) , status: :created
+    if lesson.save
+      lesson.reload
+      render json: lesson_fetch_results(lesson), status: :created
     else
-      render_error(course.errors.full_messages, status: :unprocessable_entity)
+      render_error(lesson.errors.full_messages, status: :unprocessable_entity)
     end
   end
 
@@ -40,23 +46,36 @@ class  Api::LessonsController < ApplicationController
   def update
     lesson = Current.tenant.lessons.find(params[:id])
 
+    lp = lesson_params.to_h
+    has_video_key = lp.key?("video_signed_id")
+    signed_id = lp["video_signed_id"].to_s
+
     ActiveRecord::Base.transaction do
-      # attach video if provided
-      if params[:lesson_type] == "video" && params[:video_signed_id].present?
-        lesson.video.attach(params[:video_signed_id])
-      else 
-        lesson.video.purge if lesson.video.attached?
+      # Update non-file fields first (or after—either is fine)
+      unless lesson.update(lp.except("video_signed_id"))
+        raise ActiveRecord::Rollback
       end
 
-      lesson.update!(lesson_params.except(:video_signed_id))
-    end  
+      # Only touch the attachment if the client sent the key at all
+      if lesson.video? && has_video_key
+        if signed_id.present?
+          pp "Attaching video with signed id: #{signed_id}"
+          lesson.video.attach(signed_id)
+        else
+          lesson.video.purge if lesson.video.attached?
+        end
+      end
+    end
+
+    lesson.reload
 
     if lesson.errors.empty?
-      render json: lesson_fetch_results(lesson), status: :created
+      render json: lesson_fetch_results(lesson), status: :ok
     else
       render_error(lesson.errors.full_messages, status: :unprocessable_entity)
     end
   end
+
 
   # DELETE /api/lessons/:id
   def destroy

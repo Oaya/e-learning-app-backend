@@ -14,7 +14,6 @@ module Api
 
 
       def update_me
-
         user = Current.user
         return render_error("Not authenticated", status: :unauthorized) unless user
 
@@ -43,6 +42,27 @@ module Api
         render_error("#{e.class}: #{e.message}", status: :internal_server_error)
       end
 
+      def update_password
+        user = Current.user
+        return render_error("Not authenticated", status: :unauthorized) unless user
+        current_password = params[:current_password]
+        new_password = params[:new_password]
+
+        unless user.valid_password?(current_password)
+          return render_error("Current password is incorrect", status: :unprocessable_entity)
+        end
+
+        user.password = new_password
+        if user.save
+          render json: { message: "Password updated successfully" }
+        else
+          render_error(user.errors.full_messages, status: :unprocessable_entity)
+        end
+      rescue => e
+        Rails.logger.error(e.full_message)
+        render_error("#{e.class}: #{e.message}", status: :internal_server_error)
+      end
+
 
 
       private
@@ -64,8 +84,6 @@ module Api
       def user_params
         params.permit(:first_name, :last_name, :avatar_signed_id, :email)
       end
-
-
     end
   end
 end

@@ -34,9 +34,9 @@ class Lesson < ApplicationRecord
   end
 
   def video_validation
-    return unless lesson_type == "video" || video.attached?
+    return unless lesson_type == "Video" || video.attached?
 
-    allowed = ["video/mp4", "video/webm", "video/ogg"]
+    allowed = [ "video/mp4", "video/webm", "video/ogg" ]
 
     unless allowed.include?(video.content_type)
       errors.add(:video, "must be a valid video format (mp4, webm, ogg)")

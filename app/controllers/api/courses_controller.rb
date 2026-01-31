@@ -34,17 +34,25 @@ class  Api::CoursesController < ApplicationController
 
   # POST /api/courses
   def create
-    course, instructors = CreateCourse.new(tenant: Current.tenant, params: course_params).call
+    cp = course_params.to_h
+    signed_id = cp["thumbnail_signed_id"].to_s
 
-    # attach thumbnail if provided
-    if course_params[:thumbnail_signed_id].present?
-      course.thumbnail.attach(course_params[:thumbnail_signed_id])
+    course, instructors =
+      CreateCourse.new(
+        tenant: Current.tenant,
+        params: cp.except("thumbnail_signed_id")
+      ).call
+
+    # Only attach if provided
+    if signed_id.present?
+      course.thumbnail.attach(signed_id)
+      course.reload
     end
 
-    if course.persisted?
+    if course.persisted? && course.errors.empty?
       render json: course_fetch_results(course, instructors), status: :created
     else
-      render_error(course.errors.full_messages,  status: :unprocessable_entity)
+      render_error(course.errors.full_messages, status: :unprocessable_entity)
     end
   end
 
@@ -52,23 +60,35 @@ class  Api::CoursesController < ApplicationController
   def update
     course = Current.tenant.courses.find(params[:id])
 
+    cp = course_params.to_h
+    has_thumb_key = cp.key?("thumbnail_signed_id")
+    signed_id = cp["thumbnail_signed_id"].to_s
+
     ActiveRecord::Base.transaction do
-      # attach thumbnail if provided
-      if course_params[:thumbnail_signed_id].present?
-        course.thumbnail.attach(course_params[:thumbnail_signed_id])
-      else
-        course.thumbnail.purge if course.thumbnail.attached?
+      # Update non-file fields
+      unless course.update(cp.except("thumbnail_signed_id"))
+        raise ActiveRecord::Rollback
       end
 
-      course.update!(course_params.except(:thumbnail_signed_id))  
+      # Only touch attachment if the client sent the key at all
+      if has_thumb_key
+        if signed_id.present?
+          course.thumbnail.attach(signed_id)
+        else
+          course.thumbnail.purge if course.thumbnail.attached?
+        end
+      end
     end
 
-    if course.error.empty?
-      render json: course_fetch_results(course, course.instructors), status: :created
+    course.reload
+
+    if course.errors.empty?
+      render json: course_fetch_results(course, course.instructors), status: :ok
     else
-      render_error(course.errors.full_messages,  status: :unprocessable_entity)
+      render_error(course.errors.full_messages, status: :unprocessable_entity)
     end
   end
+
 
   # DELETE /api/courses/:id
   def destroy
@@ -168,6 +188,6 @@ class  Api::CoursesController < ApplicationController
           avatar: instructor.avatar.attached? ? rails_blob_url(instructor.avatar, host: request.base_url) : nil
         }
       }
-    ) 
+    )
   end
 end
