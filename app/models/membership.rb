@@ -1,5 +1,5 @@
 class Membership < ApplicationRecord
-  belongs_to :user
+  belongs_to :user, dependent: :destroy
   belongs_to :tenant
 
   enum :role, {
