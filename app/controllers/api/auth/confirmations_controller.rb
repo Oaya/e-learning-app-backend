@@ -10,7 +10,16 @@ module Api
 
         if resource.errors.empty?
           resource.update!(status: "Active")
-          redirect_to "#{frontend_url}/confirm-email?status=success"
+
+          # need to get the tenant plan here to decide where to redirect after confirmation, because the user can only access the frontend after confirming email, and the frontend will check the tenant plan to decide which page to show
+          # if the tenant plan is free, then redirect to the dashboard, otherwise redirect to the payment page to complete the payment
+          tenant = resource.tenant
+          plan = tenant.plan
+          if plan.name == "basic"
+            redirect_to "#{frontend_url}/confirm-email?status=success&next=dashboard"
+          else
+            redirect_to "#{frontend_url}/confirm-email?status=success&next=payment"
+          end
         else
           redirect_to "#{frontend_url}/confirm-email?status=error"
         end

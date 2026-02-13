@@ -63,7 +63,14 @@ module Api
         render_error("#{e.class}: #{e.message}", status: :internal_server_error)
       end
 
-
+      def signup_status
+        user = Current.user
+        if user
+          render json: { signed_up: true, email: user.email }
+        else
+          render json: { signed_up: false }
+        end
+      end
 
       private
 

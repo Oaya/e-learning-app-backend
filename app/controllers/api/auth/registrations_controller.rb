@@ -34,9 +34,12 @@ module Api
 
         # create tenant, user and membership save user and send confirmation
         ActiveRecord::Base.transaction do
-          tenant = Tenant.create!(name: tenant_params[:tenant], plan: plan)
+          # if the plan is free, then the tenant status will be active immediately, otherwise the tenant status will be pending until the user completes the payment
+          tenant_status = plan.name == "basic" ? "Active" : "Pending"
+          tenant = Tenant.create!(name: tenant_params[:tenant], plan: plan, status: tenant_status)
           pp tenant
 
+          # :comfirmable is enabled, so the user will be created with "invited" status and will be updated to "Active" after confirming email with Devise::ConfirmationsController
           user = User.create!(sign_up_params.merge(email: email, tenant: tenant, status: "invited"))
 
           pp user

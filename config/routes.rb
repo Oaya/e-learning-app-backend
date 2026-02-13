@@ -11,6 +11,18 @@ Rails.application.routes.draw do
       },
       only: [ :registrations, :sessions, :confirmations, :invitations ]
 
+    # Not Devise routes, but still auth-related, so putting here for now
+    namespace :auth do
+      resources :me, only: [] do
+        collection do
+          post "signup_status", to: "users#signup_status"
+          get "", to: "users#me"
+          patch "", to: "users#update_me"
+          patch "password", to: "users#update_password"
+        end
+      end
+    end
+
     resources :users, only: [ :index, :show, :update, :destroy ] do
       collection do
         get :instructors
@@ -42,10 +54,14 @@ Rails.application.routes.draw do
 
     resources :lessons, only: [ :show, :update, :destroy ]
 
-    get "auth/me", to: "auth/users#me"
-    patch "auth/me", to: "auth/users#update_me"
-    patch "auth/me/password", to: "auth/users#update_password"
 
+    # Active Storage direct upload endpoint
     post "rails/active_storage/direct_uploads", to: "active_storage/direct_uploads#create"
+
+    # Payment endpoint
+    post "payments/checkout", to: "payments#checkout"
+
+    # Stripe webhook endpoint
+    post "stripe/webhook", to: "stripe_webhooks#receive"
   end
 end
