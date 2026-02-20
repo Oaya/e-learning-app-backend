@@ -1,5 +1,6 @@
 class Tenant < ApplicationRecord
   belongs_to :plan
+  belongs_to :billing_owner, class_name: "User", foreign_key: "billing_owner_id", optional: true
   has_many :courses
   has_many :sections
   has_many :lessons
@@ -12,9 +13,11 @@ class Tenant < ApplicationRecord
   validates :stripe_customer_id, uniqueness: true, allow_nil: true
 
   enum :status, {
-    active: "Active",
-    inactive: "Inactive",
-    closed: "Closed",
-    pending: "Pending"
+    active: "active",
+    inactive: "inactive",
+    closed: "closed",
+    past_due: "past_due",
+    canceled: "canceled",
+    pending: "pending"
   }, validate: true
 end

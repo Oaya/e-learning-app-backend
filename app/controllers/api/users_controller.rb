@@ -1,7 +1,7 @@
 class Api::UsersController < ApplicationController
   before_action :authenticate_api_user!
-  before_action :require_admin_or_instructor!, only: [ :index ]
-  before_action :require_admin!, only: [ :instructors, :bulk_delete ]
+  before_action :require_admin_or_instructor!, only: [ :index, :show, :courses, :instructors ]
+  before_action :require_admin!, :require_active_tenant!, only: [  :bulk_delete ]
 
   # GET /api/users
   def index

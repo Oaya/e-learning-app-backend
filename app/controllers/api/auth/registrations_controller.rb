@@ -35,7 +35,7 @@ module Api
         # create tenant, user and membership save user and send confirmation
         ActiveRecord::Base.transaction do
           # if the plan is free, then the tenant status will be active immediately, otherwise the tenant status will be pending until the user completes the payment
-          tenant_status = plan.name == "basic" ? "Active" : "Pending"
+          tenant_status = plan.name == "basic" ? "active" : "pending"
           tenant = Tenant.create!(name: tenant_params[:tenant], plan: plan, status: tenant_status)
           pp tenant
 
@@ -44,7 +44,9 @@ module Api
 
           pp user
 
-          Membership.create!(user: user, tenant: tenant, role: "Admin")
+          tenant.update!(billing_owner_id: user.id)
+
+          Membership.create!(user: user, tenant: tenant, role: "admin")
 
           render json: { message: "Confirmation instruction sent to #{email}" }, status: :created
         end
@@ -53,8 +55,6 @@ module Api
       rescue ActiveRecord::RecordInvalid => e
           render_error(e.record.errors.full_messages, status: :unprocessable_entity)
       end
-
-
 
       private
 

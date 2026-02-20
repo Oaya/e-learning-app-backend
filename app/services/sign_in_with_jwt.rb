@@ -19,7 +19,7 @@ class SignInWithJwt
     {
       message: message,
       token: jwt,
-      user: serialize_user(user)
+      user: UserSerializer.new(user, host: @controller.request.base_url).as_json
     }
   end
 
@@ -32,20 +32,5 @@ class SignInWithJwt
     else
       :api_user
     end
-  end
-
-
-  def serialize_user(user)
-    {
-      id: user.id,
-      email: user.email,
-      first_name: user.first_name,
-      last_name: user.last_name,
-      role: Membership.roles[user.membership&.role],
-      tenant_id: user.tenant&.id,
-      tenant_name: user.tenant&.name,
-      plan: user.tenant&.plan&.name,
-      avatar: user.avatar.attached? ? rails_blob_url(user.avatar, host: @controller.request.base_url) : nil
-    }
   end
 end

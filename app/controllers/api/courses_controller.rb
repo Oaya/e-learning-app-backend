@@ -1,6 +1,6 @@
 class  Api::CoursesController < ApplicationController
   before_action :authenticate_api_user!
-  before_action :require_admin!, only: [ :create, :update, :destroy ]
+  before_action :require_admin!, :require_active_tenant!, only: [ :create, :update, :destroy, :price, :publish ]
   include Rails.application.routes.url_helpers
 
   # GET /api/courses

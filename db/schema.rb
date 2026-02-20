@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_13_222005) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_19_221705) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -114,6 +114,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_13_222005) do
   end
 
   create_table "tenants", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "billing_owner_id"
     t.datetime "created_at", null: false
     t.string "name", null: false
     t.uuid "plan_id", null: false
@@ -121,6 +122,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_13_222005) do
     t.string "stripe_customer_id"
     t.string "stripe_subscription_id"
     t.datetime "updated_at", null: false
+    t.index ["billing_owner_id"], name: "index_tenants_on_billing_owner_id"
     t.index ["plan_id"], name: "index_tenants_on_plan_id"
     t.index ["status"], name: "index_tenants_on_status"
   end
@@ -169,5 +171,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_13_222005) do
   add_foreign_key "sections", "courses"
   add_foreign_key "sections", "tenants"
   add_foreign_key "tenants", "plans"
+  add_foreign_key "tenants", "users", column: "billing_owner_id"
   add_foreign_key "users", "tenants"
 end

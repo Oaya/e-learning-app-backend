@@ -5,7 +5,6 @@ module Api
 
       before_action :authenticate_api_user!, :require_admin!, :set_current_user_tenant_plan, only: [ :create ]
 
-
       # POST /api/auth/invitation Send invitation email
       def create
         invited_user = InviteUser.new(
@@ -52,7 +51,6 @@ module Api
       def accept_resource_params
         params.permit(:invitation_token, :password, :password_confirmation)
       end
-
     end
   end
 end

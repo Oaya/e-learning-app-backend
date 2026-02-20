@@ -8,10 +8,10 @@ class User < ApplicationRecord
   validates :status, presence: true
 
   enum :status, {
-    active: "Active",
-    inactive: "Inactive",
-    closed: "Closed",
-    invited: "Invited"
+    active: "active",
+    inactive: "inactive",
+    closed: "closed",
+    invited: "invited"
   }, validate: true
 
 

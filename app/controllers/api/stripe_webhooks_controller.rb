@@ -1,34 +1,34 @@
 class Api::StripeWebhooksController < ApplicationController
   def receive
-    payload = request.raw_post
-
     endpoint_secret = Rails.application.credentials.dig(:stripe, :webhook_secret)
+    return render_error("Missing Stripe webhook secret", :internal_server_error) if endpoint_secret.blank?
+
+    payload = request.raw_post
     signature = request.headers["Stripe-Signature"]
 
-    begin
-      event =
-        if endpoint_secret.present?
-          Stripe::Webhook.construct_event(payload, signature, endpoint_secret)
-        else
-          Stripe::Event.construct_from(JSON.parse(payload, symbolize_names: true))
-        end
-    rescue JSON::ParserError => e
-      return render_error("Invalid payload: #{e.message}", :bad_request)
-    rescue Stripe::SignatureVerificationError => e
-      return render_error("Invalid signature: #{e.message}", :bad_request)
-    end
+    event = Stripe::Webhook.construct_event(payload, signature, endpoint_secret)
+
+    pp event.type
+
 
     case event.type
     when "checkout.session.completed"
-      session = event.data.object
-      if session.present?
-        create_signup_user(session)
-      else
-        Rails.logger.error("Session data missing in event: #{event.id}")
-      end
+      handle_checkout_session_completed(event.data.object)
+    when "invoice.paid"
+      handle_invoice_paid(event.data.object)
+    when "invoice.payment_failed"
+      handle_invoice_payment_failed(event.data.object)
+    when "customer.subscription.deleted"
+      handle_subscription_deleted(event.data.object)
+    else
+      Rails.logger.info("Unhandled event type: #{event.type}")
     end
 
-      head :ok
+    head :ok
+  rescue Stripe::SignatureVerificationError => e
+    render_error("Invalid signature: #{e.message}", :bad_request)
+  rescue JSON::ParserError => e
+    render_error("Invalid payload: #{e.message}", :bad_request)
   rescue => e
     Rails.logger.error("Error processing webhook: #{e.full_message}")
     render_error("Internal server error", :internal_server_error)
@@ -36,42 +36,67 @@ class Api::StripeWebhooksController < ApplicationController
 
   private
 
-  def create_signup_user(session)
-    pp "Handling checkout.session.completed event"
-    Rails.logger.info(JSON.pretty_generate(session.to_h))
+  def handle_checkout_session_completed(session)
     # get the customer id and subscription id from the session
     customer_id = session.customer
     subscription_id = session.subscription
 
     user_data = session.metadata
+    tenant_id = user_data["tenant_id"]
 
-    # first create the tenant with the email and name from the metadata, and save the stripe customer id and subscription id in the tenant record
-    tenant = Tenant.create!(
-      name: user_data.tenant.to_s,
-      plan_id: user_data.plan_id.to_s,
-      stripe_customer_id: customer_id.to_s,
-      stripe_subscription_id: subscription_id.to_s,
-    )
+    unless tenant_id.present?
+      Rails.logger.error("Missing tenant ID in session metadata: #{user_data}")
+      return
+    end
 
-    # then create the user and associate it with the tenant
-    user = User.create!(
-      email: user_data.email.to_s,
-      first_name: user_data.first_name.to_s,
-      last_name: user_data.last_name.to_s,
-      password: Devise.friendly_token[0, 20],
-      tenant: tenant
-    )
-
-    # finally create the membership to link the user and tenant with the default role
-    Membership.create!(
-      user: user,
-      tenant: tenant,
-      role: :admin
-    )
-
-    # and then send a welcome email to the user
+    # Update the tenant with the Stripe customer and subscription IDs
+    tenant = Tenant.find_by(id: tenant_id)
+    if tenant
+      tenant.update!(stripe_customer_id: customer_id, stripe_subscription_id: subscription_id)
+    end
 
   rescue => e
     Rails.logger.error("Error handling checkout session completed: #{e.full_message}")
+  end
+
+
+  def handle_invoice_paid(invoice)
+    Rails.logger.info("Invoice paid: #{invoice.id}")
+    # You can add logic here to update your database or send notifications
+    tenant = Tenant.find_by(stripe_subscription_id: invoice.subscription)
+
+    if tenant
+      tenant.update!(status: "active")
+    else
+      Rails.logger.error("Tenant not found for subscription ID: #{invoice.subscription}")
+    end
+  rescue => e
+    Rails.logger.error("Error handling invoice paid: #{e.full_message}")
+  end
+
+  def handle_invoice_payment_failed(invoice)
+    Rails.logger.info("Invoice payment failed: #{invoice.id}")
+    tenant = Tenant.find_by(stripe_subscription_id: invoice.subscription)
+
+    if tenant
+      tenant.update!(status: "past_due")
+    else
+      Rails.logger.error("Tenant not found for subscription ID: #{invoice.subscription}")
+    end
+  rescue => e
+    Rails.logger.error("Error handling invoice payment failed: #{e.full_message}")
+  end
+
+  def handle_subscription_deleted(subscription)
+    Rails.logger.info("Subscription deleted: #{subscription.id}")
+    tenant = Tenant.find_by(stripe_subscription_id: subscription.id)
+
+    if tenant
+      tenant.update!(status: "canceled")
+    else
+      Rails.logger.error("Tenant not found for subscription ID: #{subscription.id}")
+    end
+  rescue => e
+    Rails.logger.error("Error handling subscription deleted: #{e.full_message}")
   end
 end

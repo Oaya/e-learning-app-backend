@@ -70,7 +70,7 @@ Devise.setup do |config|
   # given strategies, for example, `config.params_authenticatable = [:database]` will
   # enable it only for database (email + password) authentication.
   # config.params_authenticatable = true
-
+  config.params_authenticatable = [ :database ]
   # Tell if authentication through HTTP Auth is enabled. False by default.
   # It can be set to an array that will enable http authentication only for the
   # given strategies, for example, `config.http_authenticatable = [:database]` will
@@ -362,10 +362,11 @@ Devise.setup do |config|
 
     # Which requests should create/send a JWT
     jwt.dispatch_requests = [
-      # [ "POST", %r{^/api/users/sign_in$} ],
+      [ "POST", %r{^/api/auth/sign_in$} ],
+      [ "PATCH", %r{^/api/auth/invitation$} ]
       # [ "POST", %r{^/api/users/confirm_signin$} ],
       # [ "PATCH",  %r{^/api/users/password$} ],
-      # [ "PATCH", %r{^/api/users/invitation$} ]
+
       # optionally, also issue token on signup:
       # ['POST', %r{^/users$}],
     ]

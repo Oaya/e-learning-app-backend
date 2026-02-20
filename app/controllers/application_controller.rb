@@ -42,4 +42,20 @@ class ApplicationController < ActionController::API
 
     render_error("No permission to access", status: :forbidden)
   end
+
+  def require_active_tenant!
+    tenant = Current.tenant
+    return render_error("Tenant required", status: :forbidden) unless tenant
+
+    status = tenant.status.to_s
+
+    return if status == "active"
+
+    # billing owner should have access even if tenant is not active, so they can update payment info
+    if tenant.billing_owner_id == Current.user.id
+      render_error("Tenant is #{status}. Please update payment information to reactivate subscription.", status: :payment_required)
+    else
+      render_error("Tenant is #{status}. Please contact billing owner to update payment information.", status: :payment_required)
+    end
+  end
 end
