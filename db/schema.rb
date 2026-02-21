@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_19_221705) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_20_223739) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -115,7 +115,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_19_221705) do
 
   create_table "tenants", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "billing_owner_id"
+    t.boolean "cancel_at_period_end"
     t.datetime "created_at", null: false
+    t.datetime "current_period_end"
     t.string "name", null: false
     t.uuid "plan_id", null: false
     t.string "status", default: "inactive", null: false

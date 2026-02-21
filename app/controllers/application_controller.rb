@@ -31,6 +31,14 @@ class ApplicationController < ActionController::API
     render_error("No permission to access", status: :forbidden)
   end
 
+  def require_billing_owner!
+    user = current_api_user
+    tenant = Current.tenant
+    return render_error("Unauthorized", status: :unauthorized) unless user && tenant
+    return if tenant.billing_owner_id == user.id
+
+    render_error("No permission to access", status: :forbidden)
+  end
 
   def require_admin_or_instructor!
     user = current_api_user

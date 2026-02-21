@@ -18,6 +18,10 @@ class Api::StripeWebhooksController < ApplicationController
       handle_invoice_paid(event.data.object)
     when "invoice.payment_failed"
       handle_invoice_payment_failed(event.data.object)
+    when "customer.subscription.updated"
+      handle_subscription_update(event.data.object)
+    when "customer.subscription.created"
+      handle_subscription_update(event.data.object)
     when "customer.subscription.deleted"
       handle_subscription_deleted(event.data.object)
     else
@@ -85,6 +89,20 @@ class Api::StripeWebhooksController < ApplicationController
     end
   rescue => e
     Rails.logger.error("Error handling invoice payment failed: #{e.full_message}")
+  end
+
+
+  def handle_subscription_update(subscription)
+    Rails.logger.info("Subscription updated: #{subscription.id}")
+    tenant = Tenant.find_by(stripe_subscription_id: subscription.id)
+
+    if tenant
+      tenant.update!(status: "active", current_period_end: Time.at(subscription.current_period_end), cancel_at_period_end: subscription.cancel_at_period_end)
+    else
+      Rails.logger.error("Tenant not found for subscription ID: #{subscription.id}")
+    end
+  rescue => e
+    Rails.logger.error("Error handling subscription update: #{e.full_message}")
   end
 
   def handle_subscription_deleted(subscription)

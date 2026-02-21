@@ -22,8 +22,10 @@ class UserSerializer
         id: tenant&.id,
         name: tenant&.name,
         status: tenant&.status,
+        plan: tenant&.plan&.name,
         is_billing_owner: is_billing_owner,
-        plan: tenant&.plan&.name
+        current_period_end: tenant&.current_period_end,
+        cancel_at_period_end: tenant&.cancel_at_period_end
       },
       avatar: avatar_url
     }

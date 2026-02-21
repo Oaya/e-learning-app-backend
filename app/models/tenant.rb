@@ -14,7 +14,6 @@ class Tenant < ApplicationRecord
 
   enum :status, {
     active: "active",
-    inactive: "inactive",
     closed: "closed",
     past_due: "past_due",
     canceled: "canceled",

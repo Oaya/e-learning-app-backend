@@ -53,13 +53,17 @@ Rails.application.routes.draw do
 
     resources :lessons, only: [ :show, :update, :destroy ]
 
+    resource :subscription, only: [] do
+      collection do
+        post :cancel
+        post :change_plan
+        get :payment_checkout
+      end
+    end
+
 
     # Active Storage direct upload endpoint
     post "rails/active_storage/direct_uploads", to: "active_storage/direct_uploads#create"
-
-    # Payment endpoint
-    get "payments/checkout", to: "payments#checkout"
-    get "payments/checkout_status", to: "payments#checkout_status"
 
 
     # Stripe webhook endpoint
