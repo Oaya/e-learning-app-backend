@@ -7,16 +7,16 @@ module Api
 
       # POST /api/auth/invitation Send invitation email
       def create
-        invited_user = InviteUser.new(
-          tenant: Current.tenant,
-          invited_by: current_api_user,
-          params: invite_params
-        ).call
+        result = invite_params.map do | inv_params|
+          InviteUser.new(tenant: Current.tenant, invited_by: current_api_user, params: inv_params).call
+        end
 
-        if invited_user.errors.any?
-          render_error(invited_user.errors.full_messages, status: :unprocessable_entity)
+        failed = result.select { |r| r.errors.any? }
+
+        if failed.any?
+          render_error(failed.map { |r| r.errors.full_messages }.flatten, status: :unprocessable_entity)
         else
-          render json: { message: "Invitation Email was sent to #{invited_user.email}" }, status: :ok
+          render json: { message: "Invitations Email sent successfully" }, status: :ok
         end
       rescue StandardError => e
         render_error(e.message, status: :forbidden)
@@ -31,7 +31,7 @@ module Api
         Rails.logger.warn("RESOURCE_ERRORS=#{resource.errors.full_messages.inspect}")
 
         if resource.errors.empty?
-          resource.update!(status: "Active")
+          resource.update!(status: "active")
           payload = SignInWithJwt.new(self).issue_jwt(resource, message: "Created your new password")
           render json: payload, status: :ok
         else
@@ -45,7 +45,9 @@ module Api
       private
 
       def invite_params
-        params.permit(:email, :first_name, :last_name, :role)
+        params.require(:users).map do | inv_params|
+          inv_params.permit(:email, :first_name, :last_name, :role)
+        end
       end
 
       def accept_resource_params

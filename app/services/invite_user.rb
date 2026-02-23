@@ -6,21 +6,31 @@ class InviteUser
   end
 
   def call
-      # Invite user into the SAME tenant as the current user
-      @email = @params[:email].to_s.downcase
-
       admin_limit_error! if @params[:role].to_s.downcase == "admin"
+
+      existing = User.find_by(email: @params[:email])
+
+      if existing.present?
+        # If the user already exists, don't resend the invitation email
+        if existing.status == "active"
+          return existing
+        end
+        # If the user exists but is not active, we can resend the invitation email by calling invite! again
+        existing.deliver_invitation
+        return existing
+      end
 
       invited_user = User.invite!(
         {
-          email: @email,
+          email: @params[:email],
           first_name: @params[:first_name],
           last_name: @params[:last_name],
           tenant_id: @tenant.id,
           status: "invited"
         },
-        @invited_by
       )
+
+      return invited_user if invited_user.errors.any?
 
       invited_user.tap do |u|
         # If invite failed, let controller handle errors
@@ -40,7 +50,7 @@ class InviteUser
   def admin_limit_error!
     max = @tenant.plan.features["max_admin"]
 
-    user = User.find_by(email: @email)
+    user = User.find_by(email: @params[:email])
 
     count = @tenant.memberships.where(role: "admin").count
 
