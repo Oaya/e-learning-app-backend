@@ -25,7 +25,8 @@ class UserSerializer
         plan: tenant&.plan&.name,
         is_billing_owner: is_billing_owner,
         current_period_end: tenant&.current_period_end,
-        cancel_at_period_end: tenant&.cancel_at_period_end
+        cancel_at_period_end: tenant&.cancel_at_period_end,
+        has_stripe_subscription: tenant&.stripe_subscription_id.present? || tenant&.stripe_customer_id.present?
       },
       avatar: avatar_url
     }

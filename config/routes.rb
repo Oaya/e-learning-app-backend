@@ -57,7 +57,7 @@ Rails.application.routes.draw do
       collection do
         post :cancel
         post :change_plan
-        get :payment_checkout
+        post :payment_checkout
       end
     end
 

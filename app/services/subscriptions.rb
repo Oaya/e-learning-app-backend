@@ -1,4 +1,4 @@
-class SubscriptionService
+class Subscriptions
   def checkout_session(plan, user)
     Stripe.api_key = Rails.application.credentials.dig(:stripe, :secret_key)
     unless plan
@@ -82,8 +82,15 @@ class SubscriptionService
         return render_error(e.message, :bad_request)
       end
       tenant.update(plan: new_plan, cancel_at_period_end: false, status: "active")
+      pp tenant
       { message: "Plan changed successfully" }
     else
+      # if there in no existing subscription, need to create a new subscription in Strip, and let frontend to handle the payment flow by redirecting to the checkout page
+
+      if tenant.stripe_subscription_id.blank?
+        return { redirect_to_checkout: true }
+      end
+
       begin
         subscription = Stripe::Subscription.retrieve(tenant.stripe_subscription_id)
         item = subscription.items.data.first

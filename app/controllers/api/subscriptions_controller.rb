@@ -4,7 +4,8 @@ class  Api::SubscriptionsController < ApplicationController
 
   # GET /api/subscriptions/payment_checkout
   def payment_checkout
-    payload = SubscriptionService.new.create_checkout_session(Current.tenant, Current.user)
+    plan = Plan.find_by(name: params[:plan])
+    payload = Subscriptions.new.checkout_session(plan, Current.user)
     render json: payload, status: :ok
   end
 
@@ -12,7 +13,7 @@ class  Api::SubscriptionsController < ApplicationController
   def cancel
     tenant = Current.tenant
 
-    payload = SubscriptionService.new.cancel_subscription(tenant)
+    payload = Subscriptions.new.cancel_subscription(tenant)
     render json: payload, status: :ok
   end
 
@@ -25,7 +26,7 @@ class  Api::SubscriptionsController < ApplicationController
     unless new_plan
       return render_error("Invalid plan: #{params[:plan]}", :unprocessable_entity)
     end
-    payload = SubscriptionService.new.change_plan(tenant, new_plan)
+    payload = Subscriptions.new.change_plan(tenant, new_plan)
     render json: payload, status: :ok
   end
 end
