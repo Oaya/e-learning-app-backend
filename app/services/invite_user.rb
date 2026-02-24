@@ -28,6 +28,7 @@ class InviteUser
           tenant_id: @tenant.id,
           status: "invited"
         },
+        @invited_by
       )
 
       return invited_user if invited_user.errors.any?

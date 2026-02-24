@@ -145,6 +145,8 @@ GEM
     erubi (1.13.1)
     et-orbi (1.4.0)
       tzinfo
+    faker (3.6.0)
+      i18n (>= 1.8.11, < 2)
     ffi (1.17.2-aarch64-linux-gnu)
     ffi (1.17.2-aarch64-linux-musl)
     ffi (1.17.2-arm-linux-gnu)
@@ -419,6 +421,7 @@ DEPENDENCIES
   devise
   devise-jwt
   devise_invitable
+  faker
   image_processing (~> 1.2)
   jsonapi-serializer
   kamal
