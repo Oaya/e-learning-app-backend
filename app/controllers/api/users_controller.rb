@@ -5,7 +5,8 @@ class Api::UsersController < ApplicationController
 
   # GET /api/users
   def index
-    users = Current.tenant.users.includes(:membership).order(created_at: :desc)
+    pp filter_params
+    users = Current.tenant.users.filtering(filter_params).includes(:membership).order(created_at: :desc)
     render json: users.map { |user|
       user_result(user)
     }
@@ -35,7 +36,6 @@ class Api::UsersController < ApplicationController
   # DELETE /api/users/bulk_delete
   def bulk_delete
     pp params
-    debugger
     user_ids = user_delete_params[:user_ids] || []
     unless user_ids.is_a?(Array)
       return render_error("user_ids must be an array", status: :bad_request)
@@ -70,6 +70,10 @@ class Api::UsersController < ApplicationController
 
 
   private
+
+  def filter_params
+    params.permit(:email, :name, :role, :status)
+  end
 
   def user_delete_params
     params.permit(user_ids: [])
