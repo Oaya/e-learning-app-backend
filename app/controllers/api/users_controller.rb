@@ -72,7 +72,7 @@ class Api::UsersController < ApplicationController
   private
 
   def filter_params
-    params.permit(:email, :name, :role, :status)
+    params.permit(:search, :role, :status)
   end
 
   def user_delete_params

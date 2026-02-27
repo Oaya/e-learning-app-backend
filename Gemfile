@@ -56,5 +56,8 @@ group :development, :test do
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
 
+  # run hooks before commit
+  gem "overcommit", require: false
+
   gem "faker"
 end

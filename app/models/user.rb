@@ -14,26 +14,17 @@ class User < ApplicationRecord
     status.present? ? where(status: status.split(",")) : all
   end
 
-  scope :filter_by_email, ->(email) {
-    if email.present?
-      pattern = "%#{sanitize_sql_like(email)}%"
-      where("users.email ILIKE ?", pattern)
-    else
-      all
-    end
-  }
-
-  scope :filter_by_name, ->(name) {
-    if name.present?
-      pattern = "%#{sanitize_sql_like(name)}%"
-      where("users.first_name ILIKE :q OR users.last_name ILIKE :q", q: pattern)
-    else
-      all
-    end
-  }
-
   scope :filter_by_role, ->(role) {
     role.present? ? joins(:membership).where(memberships: { role: role.split(",") }) : all
+  }
+
+  scope :filter_by_search, ->(value) {
+    if value.present?
+      pattern = "%#{sanitize_sql_like(value)}%"
+      where("users.first_name LIKE :q OR users.last_name LIKE :q OR users.email LIKE :q", q: pattern)
+    else
+      all
+    end
   }
 
 
