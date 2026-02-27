@@ -72,7 +72,11 @@ class Api::UsersController < ApplicationController
   private
 
   def filter_params
-    params.permit(:search, :role, :status)
+    permitted = params.permit(:search, :status)
+
+    if params[:role].present?
+      permitted.merge(role: role)
+    end
   end
 
   def user_delete_params
