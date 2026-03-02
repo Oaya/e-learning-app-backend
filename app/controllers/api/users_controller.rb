@@ -5,7 +5,6 @@ class Api::UsersController < ApplicationController
 
   # GET /api/users
   def index
-    pp filter_params
     users = Current.tenant.users.filtering(filter_params).includes(:membership).order(created_at: :desc)
     render json: users.map { |user|
       user_result(user)
