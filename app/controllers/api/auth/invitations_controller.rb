@@ -49,8 +49,9 @@ module Api
         params.require(:users).map do |inv_params|
           permitted = inv_params.permit(:email, :first_name, :last_name)
 
-          role = inv_params[:role].to_s.strop.downcase
-          role = "student" unless allowed_roles.includes?(role)
+          role = inv_params[:role].to_s.downcase
+          pp role
+          role = "student" unless allowed_roles.include?(role)
 
           permitted.merge(role: role)
         end

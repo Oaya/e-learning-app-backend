@@ -5,7 +5,10 @@ class Api::UsersController < ApplicationController
 
   # GET /api/users
   def index
-    users = Current.tenant.users.filtering(filter_params).includes(:membership).order(created_at: :desc)
+    users = Current.tenant.users.filtering(filter_params).includes(:membership)
+
+    users = users.order(sort_params) if sort_params.present?
+
     render json: users.map { |user|
       user_result(user)
     }
@@ -79,6 +82,31 @@ class Api::UsersController < ApplicationController
     end
 
     permitted
+  end
+
+
+  def sort_params
+    allowed = %w[first_name email status role]
+    priority_order = [ "status", "role", "first_name", "email" ]
+    sort = params[:sort].to_s
+
+    return nil if sort.blank?
+    parts = sort.split(",")
+
+    reordered = parts.sort_by do |part|
+      field = part.delete_prefix("-")
+      priority_order.index(field) || 999
+    end
+
+    clauses = reordered.map do |p|
+      dir = p.start_with?("-") ? "DESC" : "ASC"
+      field = p.delete_prefix("-")
+
+      next unless allowed.include?(field)
+
+      "#{field} #{dir}"
+    end.compact
+    clauses.join(", ")
   end
 
   def user_delete_params
