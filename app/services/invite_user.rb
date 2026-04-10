@@ -11,7 +11,7 @@ class InviteUser
       existing = User.find_by(email: @params[:email])
 
       if existing.present?
-        # If the user already exists, don't resend the invitation email
+        # If the user already exists and active, don't resend the invitation email
         if existing.status == "active"
           return existing
         end
@@ -28,7 +28,8 @@ class InviteUser
           tenant_id: @tenant.id,
           status: "invited"
         },
-        @invited_by
+        @invited_by,
+        skip_invitation: true
       )
 
       return invited_user if invited_user.errors.any?
@@ -43,6 +44,10 @@ class InviteUser
           tenant_id: @tenant.id,
           role: @params[:role]
         )
+
+        # Send invitation now after created Member
+        invited_user.deliver_invitation
+        invited_user
       end
   end
 

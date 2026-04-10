@@ -17,7 +17,7 @@ require "faker"
     features: {
       max_courses: 10,
       max_admin: 2,
-      max_users: 50,
+      max_users: 100,
       quizzes: false
     }
   },
