@@ -58,13 +58,23 @@ class Api::UsersController < ApplicationController
   end
 
   # GET /api/users/:id/courses
+  # 1. get courses as instructor.
+  
   def courses
     user = Current.tenant.users.find(params[:id])
-    courses = user.courses.order(created_at: :desc)
-    render json: courses.map { |course|
+    courses_as_instructor = Current.tenant
+      .courses
+      .joins(:course_instructors)
+      .where(course_instructors: { instructor_id: user.id })
+      .distinct
+      .order(created_at: :desc)
+
+
+    render json: courses_as_instructor.map { |course|
       {
         id: course.id,
-        title: course.title
+        title: course.title,
+        published: course.published
         # include enrollment status for the course for this user
       }
     }

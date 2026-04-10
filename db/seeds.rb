@@ -15,7 +15,7 @@ require "faker"
     name: "basic",
     price: 0,
     features: {
-      max_courses: 1,
+      max_courses: 10,
       max_admin: 2,
       max_users: 50,
       quizzes: false
@@ -26,7 +26,7 @@ require "faker"
     price: 10,
     stripe_price_id: "price_1SznDlAkHFmsFUgnSFS8RrhD",
     features: {
-      max_courses: 10,
+      max_courses: 30,
       max_admin: 5,
       max_users: 500,
       quizzes: true
@@ -37,7 +37,7 @@ require "faker"
     price: 30,
     stripe_price_id: "price_1SznEgAkHFmsFUgnPED89bPF",
     features: {
-      max_courses: 50,
+      max_courses: 100,
       max_admin: 10,
       max_users: 1000,
       quizzes: true
