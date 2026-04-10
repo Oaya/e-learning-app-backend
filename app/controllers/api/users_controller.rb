@@ -59,7 +59,7 @@ class Api::UsersController < ApplicationController
 
   # GET /api/users/:id/courses
   # 1. get courses as instructor.
-  
+
   def courses
     user = Current.tenant.users.find(params[:id])
     courses_as_instructor = Current.tenant
