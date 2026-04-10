@@ -1,15 +1,40 @@
 services:
-  db:
-    image: postgres:16
-    container_name: e_learning_db
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: e_learning_dev_db
-    ports:
-      - "7654:5432"
+  web:
+    container_name: e_learning_dev_server
+    build:
+      context: .
+      target: build
+    working_dir: /rails
+    command: bundle exec rails server -b 0.0.0.0 -p 3000
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - .:/rails
+      - bundle_data:/usr/local/bundle
+    ports:
+      - "3000:3000"
+    environment:
+      RAILS_ENV: development
+      BUNDLE_WITHOUT: ""
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: e_learning_dev
+      DB_USERNAME: e_learning_dev
+      DB_PASSWORD: e_learning_dev
+      TEST_DB_NAME: e_learning_test
+    depends_on:
+      - db
+
+  db:
+    container_name: e_learning_dev_db
+    image: postgres:16
+    environment:
+      POSTGRES_DB: e_learning_dev
+      POSTGRES_USER: e_learning_dev
+      POSTGRES_PASSWORD: e_learning_dev
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
 
 volumes:
-  pgdata:
+  postgres_data:
+  bundle_data:
